@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"google.golang.org/grpc/credentials/oauth"
 	"google.golang.org/grpc/status"
 	"grpc_test/pb"
 	"log"
@@ -51,25 +50,4 @@ func main() {
 	}
 	// 拿到了RPC响应
 	log.Printf("resp:%v\n", resp.GetReply())
-}
-
-func unaryInterceptor(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-	var credsConfigured bool
-	for _, o := range opts {
-		_, ok := o.(grpc.PerRPCCredsCallOption)
-		if ok {
-			credsConfigured = true
-			break
-		}
-	}
-	if !credsConfigured {
-		opts = append(opts, grpc.PerRPCCredentials(oauth.NewOauthAccess(&oauth2.Token{
-			AccessToken: "some-secret-token",
-		})))
-	}
-	start := time.Now()
-	err := invoker(ctx, method, req, reply, cc, opts...)
-	end := time.Now()
-	fmt.Printf("RPC: %s, start time: %s, end time: %s, err: %v\n", method, start.Format("Basic"), end.Format(time.RFC3339), err)
-	return err
 }
